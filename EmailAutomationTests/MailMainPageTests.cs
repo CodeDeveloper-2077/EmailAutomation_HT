@@ -16,7 +16,7 @@ namespace EmailAutomationTests
         {
             Driver = new ChromeDriver();
             Driver.Manage().Window.Maximize();
-            Wait = new WebDriverWait(Driver, TimeSpan.FromMinutes(1));
+            Wait = new WebDriverWait(Driver, TimeSpan.FromMinutes(1.5));
         }
 
         [TestMethod]
@@ -24,7 +24,7 @@ namespace EmailAutomationTests
         public void Login_ShouldLogInToAccountWithCorrectData(string email, string password)
         {
             //Arrange
-            MailMainPage mainPage = new MailMainPage(Driver);
+            MailMainPage mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
 
             //Act
             mainPage.Navigate();
@@ -40,7 +40,7 @@ namespace EmailAutomationTests
         public void Login_ShouldNotLogInToAccountWithWrongOrEmptyCredentials(string email, string password)
         {
             //Arrange
-            MailMainPage mainPage = new MailMainPage(Driver);
+            MailMainPage mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
 
             //Act
             mainPage.Navigate();
@@ -56,7 +56,7 @@ namespace EmailAutomationTests
         public void Login_ShouldNotLogInToAccountWithEmptyCredentials(string email, string password)
         {
             //Arrange
-            MailMainPage mainPage = new MailMainPage(Driver);
+            MailMainPage mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
 
             //Act
             mainPage.Navigate();
@@ -66,6 +66,35 @@ namespace EmailAutomationTests
             //Assert
             var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id=\"yDmH0d\"]/c-wiz/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[2]")));
             Assert.IsTrue(expectedElement.Text.Contains("Enter an email or phone number"));
+        }
+
+        [TestMethod]
+        [DataRow("shevchenkooleh8@gmail.com", "asd12sd45", "shevchenkooleh442@gmail.com")]
+        public void SendMessage_ShouldSendMessageToAnotherMailbox(string firstEmail, string password, string secondEmail)
+        {
+            //Arrange
+            MailMainPage mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
+
+            //Act
+            mainPage.Navigate();
+            mainPage.Login(firstEmail, password);
+            mainPage.SendMessage(secondEmail);
+
+            //Assert
+            var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath(".//span[text()='Message sent']")));
+            Assert.IsNotNull(expectedElement);
+
+            Driver.Quit();
+            TestInitialize();
+            mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
+            mainPage.Navigate();
+            mainPage.Login(secondEmail, password);
+            mainPage.SendMessage(firstEmail, title: "New Alias", message: "New Alias for User");
+        }
+
+        private MessageGenerationService GenerationServiceFactory()
+        {
+            return new MessageGenerationService();
         }
     }
 }
