@@ -73,5 +73,16 @@ namespace EmailAutomation
 
             sendButton.Click();
         }
+
+        public void ChangeNickname(string email, string password)
+        {
+            this.Login(email, password);
+
+            var accountButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id=\"gb\"]/div[2]/div[3]/div[1]/div[2]/div/a")));
+            accountButton.Click();
+
+            var manageButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Manage your Google Account']")));
+            manageButton.Click();
+        }
     }
 }

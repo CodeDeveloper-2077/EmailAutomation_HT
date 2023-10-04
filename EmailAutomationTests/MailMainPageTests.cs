@@ -1,6 +1,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using System.Net.Http.Headers;
 
 namespace EmailAutomationTests
 {
@@ -90,6 +91,33 @@ namespace EmailAutomationTests
             mainPage.Navigate();
             mainPage.Login(secondEmail, password);
             mainPage.SendMessage(firstEmail, title: "New Alias", message: "New Alias for User");
+        }
+
+        [TestMethod]
+        [DataRow("shevchenkooleh8@gmail.com", "asd12sd45")]
+        public void ChangeNickname_ShouldChangeUserAlias(string email, string password)
+        {
+            //Arrange
+            var mainPage = new MailMainPage(Driver, this.GenerationServiceFactory());
+
+            //Act
+            mainPage.Navigate();
+            mainPage.Login(email, password);
+            var messageLabel = Wait.Until(ExpectedConditions.ElementExists(By.ClassName("bqe")));
+            string newAlias = messageLabel.Text;
+
+            Driver.Navigate().GoToUrl("https://myaccount.google.com/profile/name/edit?continue=https://myaccount.google.com/personal-info?hl%3Den_GB&hl=en_GB&pli=1&rapt=AEjHL4OIbeT3a-S7irP7cUVhwhUA6kOo0wi7TKQAWnam1nCkaqeZocpN_C9QW56QLX_1_AWjAOLHyl6_ExB6QvNxxkiFH-cnsA");
+
+            var nameInput = Wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("i6")));
+            nameInput.Click();
+            nameInput.Clear();
+            nameInput.SendKeys("Test Name");
+
+            var saveButton = Wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//span[text()='Save']")));
+            saveButton.Click();
+
+            //Assert
+            Assert.IsNotNull(nameInput);
         }
 
         private MessageGenerationService GenerationServiceFactory()
