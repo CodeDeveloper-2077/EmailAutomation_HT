@@ -51,5 +51,33 @@ namespace EmailAutomation
             var manageButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Manage your Google Account']")));
             manageButton.Click();
         }
+
+        public string GetEmptyPasswordErrorMessage()
+        {
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span")));
+
+            return expectedElement.Text;
+        }
+
+        public string GetEmptyEmailErrorMessage()
+        {
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[2]")));
+
+            return expectedElement.Text;
+        }
+
+        public string GetSuccessfulSentMessageNotification()
+        {
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath(".//span[text()='Message sent']")));
+
+            return expectedElement.Text;
+        }
+
+        public string GetSuccessfulLoginMessage()
+        {
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath(".//*[text()='Inbox']")));
+
+            return expectedElement.Text;
+        }
     }
 }

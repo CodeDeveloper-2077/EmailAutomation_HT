@@ -31,8 +31,7 @@ namespace EmailAutomationTests
             _mainPage.Login(email, password);
 
             //Assert
-            var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath(".//*[text()='Inbox']")));
-            Assert.IsNotNull(expectedElement);
+            Assert.AreEqual("Inbox", _mainPage.GetSuccessfulLoginMessage());
             Driver.Quit();
         }
 
@@ -45,8 +44,7 @@ namespace EmailAutomationTests
             _mainPage.Login(email, password);
 
             //Assert
-            var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span")));
-            Assert.IsTrue(expectedElement.Text.Contains("Wrong password. Try again or click Forgot password to reset it."));
+            Assert.AreEqual("Wrong password. Try again or click Forgot password to reset it.", _mainPage.GetEmptyPasswordErrorMessage());
             Driver.Quit();
         }
 
@@ -60,8 +58,7 @@ namespace EmailAutomationTests
             _mainPage.NextButton.Click();
 
             //Assert
-            var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[2]")));
-            Assert.IsTrue(expectedElement.Text.Contains("Enter an email or phone number"));
+            Assert.AreEqual("Enter an email or phone number", _mainPage.GetEmptyEmailErrorMessage());
             Driver.Quit();
         }
 
@@ -84,8 +81,7 @@ namespace EmailAutomationTests
             messageSender.SendMessage(secondEmail, title, message);
 
             //Assert
-            var expectedElement = Wait.Until(ExpectedConditions.ElementExists(By.XPath(".//span[text()='Message sent']")));
-            Assert.IsNotNull(expectedElement);
+            Assert.AreEqual("Message sent", _mainPage.GetSuccessfulSentMessageNotification());
 
             Driver.Quit();
             TestInitialize();
