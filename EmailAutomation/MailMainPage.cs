@@ -7,22 +7,36 @@ namespace EmailAutomation
 {
     public class MailMainPage
     {
+        private readonly By _passwordInputLocator = By.XPath("//*[@id='password']//input");
+        private readonly By _passwordNextButtonLocator = By.XPath("//*[@id='passwordNext']//span");
+        private readonly By _nicknameFieldLocator = By.XPath("//*[@id='yDmH0d']//div[@class='gWjfMb']");
+        private readonly By _emptyPasswordLabelLocator = By.XPath("//*[@id='yDmH0d']//span[2]");
+        private readonly By _successfulSentLabelLocator = By.XPath(".//span[text()='Message sent']");
+        private readonly By _successfulLoginLabelLocator = By.XPath(".//*[text()='Inbox']");
+        private readonly By _emptyEmailLabelLocator = By.XPath("//*[@id='yDmH0d']//div[contains(@class, 'o6cuMc')]");
         private readonly string _url = "https://www.gmail.com";
+
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
 
         public MailMainPage(IWebDriver driver)
         {
             _driver = driver;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             PageFactory.InitElements(_driver, this);
         }
 
         [FindsBy(How = How.Id, Using = "identifierId")]
         public IWebElement EmailInput { get; set; }
 
-        [FindsBy(How = How.XPath, Using = "//*[@id='identifierNext']/div/button/span")]
+        [FindsBy(How = How.XPath, Using = "//*[@id='identifierNext']//span")]
         public IWebElement NextButton { get; set; }
+
+        [FindsBy(How = How.Id, Using = "i6")]
+        public IWebElement NameInput { get; set; }
+
+        [FindsBy(How = How.XPath, Using = ".//span[text()='Save']")]
+        public IWebElement SaveElement { get; set; }
 
         public void Navigate()
         {
@@ -34,50 +48,56 @@ namespace EmailAutomation
             EmailInput.SendKeys(email);
             NextButton.Click();
 
-            var passwordInput = _wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='password']/div[1]/div/div[1]/input")));
-            var passwordNextButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id='passwordNext']/div/button/span")));
+            var passwordInput = _wait.Until(ExpectedConditions.ElementExists(_passwordInputLocator));
+            var passwordNextButton = _wait.Until(ExpectedConditions.ElementToBeClickable(_passwordNextButtonLocator));
 
             passwordInput.SendKeys(password);
             passwordNextButton.Click();
         }
 
-        public void ChangeNickname(string email, string password)
+        public void ChangeNickname()
         {
-            this.Login(email, password);
+            _driver.Navigate().GoToUrl("https://myaccount.google.com/profile/name/edit?continue=https://myaccount.google.com/personal-info?hl%3Den_GB&hl=en_GB&pli=1&rapt=AEjHL4OIbeT3a-S7irP7cUVhwhUA6kOo0wi7TKQAWnam1nCkaqeZocpN_C9QW56QLX_1_AWjAOLHyl6_ExB6QvNxxkiFH-cnsA");
 
-            var accountButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id='gb']/div[2]/div[3]/div[1]/div[2]/div/a")));
-            accountButton.Click();
+            NameInput.Click();
+            NameInput.Clear();
+            NameInput.SendKeys("Test Name");
 
-            var manageButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Manage your Google Account']")));
-            manageButton.Click();
+            SaveElement.Click();
         }
 
         public string GetEmptyPasswordErrorMessage()
         {
-            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span")));
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(_emptyPasswordLabelLocator));
 
             return expectedElement.Text;
         }
 
         public string GetEmptyEmailErrorMessage()
         {
-            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='yDmH0d']/c-wiz/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[2]")));
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(_emptyEmailLabelLocator));
 
             return expectedElement.Text;
         }
 
         public string GetSuccessfulSentMessageNotification()
         {
-            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath(".//span[text()='Message sent']")));
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(_successfulSentLabelLocator));
 
             return expectedElement.Text;
         }
 
         public string GetSuccessfulLoginMessage()
         {
-            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(By.XPath(".//*[text()='Inbox']")));
+            var expectedElement = _wait.Until(ExpectedConditions.ElementExists(_successfulLoginLabelLocator));
 
             return expectedElement.Text;
+        }
+
+        public string GetSuccessfulNicknameChangedMessage()
+        {
+            var nicknameField = _wait.Until(ExpectedConditions.ElementExists(_nicknameFieldLocator));
+            return nicknameField.Text;
         }
     }
 }

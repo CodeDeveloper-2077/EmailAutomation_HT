@@ -6,12 +6,21 @@ namespace EmailAutomation
     {
         private readonly string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
-        public string GenerateRandomMessage(int minMessageLength, int maxMessageLength)
+        private readonly int _minLength;
+        private readonly int _maxLength;
+
+        public MessageGenerationService(int minLength, int maxLength)
+        {
+            _minLength = minLength;
+            _maxLength = maxLength;
+        }
+
+        public string GenerateRandomMessage()
         {
             StringBuilder sb = new StringBuilder();
             Random random = new Random();
 
-            int messageLength = random.Next(minMessageLength, maxMessageLength);
+            int messageLength = random.Next(_minLength, _maxLength);
 
             for (int i = 0; i <= messageLength; i++)
             {

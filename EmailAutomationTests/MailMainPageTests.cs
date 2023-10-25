@@ -7,18 +7,15 @@ namespace EmailAutomationTests
     [TestClass]
     public class MailMainPageTests
     {
-        public IWebDriver Driver { get; set; }
-
-        public WebDriverWait Wait { get; set; }
+        private IWebDriver _driver;
 
         private MailMainPage _mainPage;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            Driver = new ChromeDriver();
-            Driver.Manage().Window.Maximize();
-            Wait = new WebDriverWait(Driver, TimeSpan.FromMinutes(3));
+            _driver = new ChromeDriver();
+            _driver.Manage().Window.Maximize();
             _mainPage = this.MainPageFactory();
         }
 
@@ -32,12 +29,12 @@ namespace EmailAutomationTests
 
             //Assert
             Assert.AreEqual("Inbox", _mainPage.GetSuccessfulLoginMessage());
-            Driver.Quit();
+            _driver.Quit();
         }
 
         [TestMethod]
         [DataRow("shevchenkooleh8@gmail.com", "hjfskhfsduw")]
-        public void Login_ShouldNotLogInToAccountWithWrongOrEmptyCredentials(string email, string password)
+        public void Login_ShouldNotLogInToAccountWithWrongCredentials(string email, string password)
         {
             //Act
             _mainPage.Navigate();
@@ -45,7 +42,7 @@ namespace EmailAutomationTests
 
             //Assert
             Assert.AreEqual("Wrong password. Try again or click Forgot password to reset it.", _mainPage.GetEmptyPasswordErrorMessage());
-            Driver.Quit();
+            _driver.Quit();
         }
 
         [TestMethod]
@@ -59,7 +56,7 @@ namespace EmailAutomationTests
 
             //Assert
             Assert.AreEqual("Enter an email or phone number", _mainPage.GetEmptyEmailErrorMessage());
-            Driver.Quit();
+            _driver.Quit();
         }
 
         [TestMethod]
@@ -68,22 +65,23 @@ namespace EmailAutomationTests
         {
             //Arrange
             var messageSender = this.MessageSenderFactory();
-            var messageGenerator = this.MessageGeneratorFactory();
-            int minTitleLength = 10, maxTitleLength = 40;
-            int minMessageLength = 40, maxMessageLength = 150;
+            var messageGenerator = this.MessageGeneratorFactory(10, 40);
 
             //Act
             _mainPage.Navigate();
             _mainPage.Login(firstEmail, password);
 
-            string title = messageGenerator.GenerateRandomMessage(minTitleLength, maxTitleLength);
-            string message = messageGenerator.GenerateRandomMessage(minMessageLength, maxMessageLength);
+            string title = messageGenerator.GenerateRandomMessage();
+
+            messageGenerator = this.MessageGeneratorFactory(40, 150);
+            string message = messageGenerator.GenerateRandomMessage();
+
             messageSender.SendMessage(secondEmail, title, message);
 
             //Assert
             Assert.AreEqual("Message sent", _mainPage.GetSuccessfulSentMessageNotification());
 
-            Driver.Quit();
+            _driver.Quit();
             TestInitialize();
             messageSender = this.MessageSenderFactory();
             _mainPage.Navigate();
@@ -98,37 +96,27 @@ namespace EmailAutomationTests
             //Act
             _mainPage.Navigate();
             _mainPage.Login(email, password);
-            var messageLabel = Wait.Until(ExpectedConditions.ElementExists(By.ClassName("bqe")));
-            string newAlias = messageLabel.Text;
-
-            Driver.Navigate().GoToUrl("https://myaccount.google.com/profile/name/edit?continue=https://myaccount.google.com/personal-info?hl%3Den_GB&hl=en_GB&pli=1&rapt=AEjHL4OIbeT3a-S7irP7cUVhwhUA6kOo0wi7TKQAWnam1nCkaqeZocpN_C9QW56QLX_1_AWjAOLHyl6_ExB6QvNxxkiFH-cnsA");
-
-            var nameInput = Wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("i6")));
-            nameInput.Click();
-            nameInput.Clear();
-            nameInput.SendKeys("Test Name");
-
-            var saveButton = Wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//span[text()='Save']")));
-            saveButton.Click();
+            Thread.Sleep(1500);
+            _mainPage.ChangeNickname();
 
             //Assert
-            Assert.IsNotNull(nameInput);
-            Driver.Quit();
+            Assert.AreEqual("Test Name Shevchenko", _mainPage.GetSuccessfulNicknameChangedMessage(), "Nickname hasn't been changed!");
+            _driver.Quit();
         }
 
-        private MessageGenerationService MessageGeneratorFactory()
+        private MessageGenerationService MessageGeneratorFactory(int minLength, int maxLength)
         {
-            return new MessageGenerationService();
+            return new MessageGenerationService(minLength, maxLength);
         }
 
         private MailMainPage MainPageFactory()
         {
-            return new MailMainPage(Driver);
+            return new MailMainPage(_driver);
         }
 
-        private MessageSenderService MessageSenderFactory()
+        private MessageSenderWindow MessageSenderFactory()
         {
-            return new MessageSenderService(Driver);
+            return new MessageSenderWindow(_driver);
         }
     }
 }
